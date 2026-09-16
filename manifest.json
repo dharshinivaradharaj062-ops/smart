@@ -1,0 +1,16 @@
+{
+  "name": "SmartScan - Supermarket Self Checkout",
+  "short_name": "SmartScan",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0f1d",
+  "theme_color": "#10b981",
+  "description": "Skip checkout queues with camera self-scanning, instant digital payments, and tamper-proof exit passes.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310b981'/><path d='M30 30h10v-10h-10v10zm0 40h10v-10h-10v10zm40-40h-10v-10h10v10zm-10 40h10v-10h-10v10zm-20-20h20v-20h-20v20z' fill='white'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

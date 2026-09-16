@@ -1,0 +1,25 @@
+{
+  "name": "smartscan-supermarket-pwa",
+  "version": "1.0.0",
+  "description": "Next-Generation Supermarket Self-Scanning PWA & Store Operations Suite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "pwa",
+    "self-checkout",
+    "barcode-scanner",
+    "supermarket",
+    "retail-tech",
+    "html5-qrcode",
+    "point-of-sale"
+  ],
+  "author": "Antigravity Engineering",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

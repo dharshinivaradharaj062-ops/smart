@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartScan — Printable Supermarket Shelf Barcode Tags</title>
+  <!-- JsBarcode CDN for standard EAN-13 & Code128 generation -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 30px;
+    }
+    .header-bar {
+      max-width: 1000px;
+      margin: 0 auto 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 20px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .header-bar h1 { font-size: 1.4rem; font-weight: 800; color: #0f172a; }
+    .header-bar p { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+    .btn-print {
+      background: #10b981;
+      color: #06231a;
+      border: none;
+      padding: 10px 20px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .tags-grid {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .shelf-tag {
+      background: #fff;
+      border: 2px solid #0f172a;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-inside: avoid;
+    }
+    .tag-cat {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0284c7;
+    }
+    .tag-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 4px 0 2px;
+      line-height: 1.3;
+    }
+    .tag-unit {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .tag-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tag-price {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .tag-mrp {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+    .tag-save {
+      background: #fef3c7;
+      color: #b45309;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .barcode-wrap {
+      text-align: center;
+      background: #fafafa;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 10px;
+    }
+    .barcode-svg {
+      width: 100%;
+      height: 60px;
+    }
+    .tag-location {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .header-bar { display: none; }
+      .tags-grid { gap: 12px; }
+      .shelf-tag { border-width: 1px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <div>
+      <h1>Supermarket Shelf Edge Price Tags & Barcodes</h1>
+      <p>Scan these test barcodes directly with your phone's camera in the SmartScan PWA.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="index.html" style="background:#e2e8f0; color:#0f172a; text-decoration:none; padding:10px 18px; border-radius:8px; font-weight:700; font-size:0.9rem;">
+        ← Back to App
+      </a>
+      <button class="btn-print" onclick="window.print()">🖨️ Print Shelf Tags</button>
+    </div>
+  </div>
+
+  <div class="tags-grid" id="tags-container"></div>
+
+  <script>
+    const sampleProducts = [
+      {
+        barcode: "8901030383794",
+        name: "FarmFresh Organic Whole Milk",
+        category: "Dairy & Eggs",
+        unit: "1 Litre",
+        sellingPrice: 64.00,
+        mrp: 70.00,
+        shelfLocation: "Aisle 2 - Cooler B3"
+      },
+      {
+        barcode: "8901491101838",
+        name: "Artisan Sourdough Loaf",
+        category: "Bakery",
+        unit: "450g",
+        sellingPrice: 89.00,
+        mrp: 99.00,
+        shelfLocation: "Aisle 1 - Bakery Rack A"
+      },
+      {
+        barcode: "8901063012722",
+        name: "NuttyDelight Roasted Almonds",
+        category: "Snacks & Dry Fruits",
+        unit: "200g Pack",
+        sellingPrice: 220.00,
+        mrp: 250.00,
+        shelfLocation: "Aisle 4 - Rack 2"
+      },
+      {
+        barcode: "8901207040475",
+        name: "PureBrew Arabica Coffee Beans",
+        category: "Beverages",
+        unit: "250g Tin",
+        sellingPrice: 349.00,
+        mrp: 399.00,
+        shelfLocation: "Aisle 3 - Shelf C"
+      },
+      {
+        barcode: "8901725112111",
+        name: "Olea Vera Extra Virgin Olive Oil",
+        category: "Gourmet & Cooking",
+        unit: "500ml Glass Bottle",
+        sellingPrice: 520.00,
+        mrp: 599.00,
+        shelfLocation: "Aisle 5 - Endcap"
+      },
+      {
+        barcode: "8901030774219",
+        name: "HydraCare Daily Face Wash",
+        category: "Personal Care",
+        unit: "150ml Tube",
+        sellingPrice: 185.00,
+        mrp: 210.00,
+        shelfLocation: "Aisle 7 - Rack B"
+      },
+      {
+        barcode: "8902080000123",
+        name: "CrispHarvest Crisp Gala Apples",
+        category: "Fresh Produce",
+        unit: "1 kg Pack",
+        sellingPrice: 159.00,
+        mrp: 180.00,
+        shelfLocation: "Produce Section - Bin 4"
+      },
+      {
+        barcode: "8901111223344",
+        name: "SparkleBrite Dishwashing Liquid",
+        category: "Household & Cleaning",
+        unit: "750ml Pump",
+        sellingPrice: 135.00,
+        mrp: 155.00,
+        shelfLocation: "Aisle 8 - Shelf A2"
+      }
+    ];
+
+    const container = document.getElementById('tags-container');
+    container.innerHTML = sampleProducts.map((p, idx) => {
+      const discount = Math.round(((p.mrp - p.sellingPrice) / p.mrp) * 100);
+      return `
+        <div class="shelf-tag">
+          <div>
+            <span class="tag-cat">${p.category}</span>
+            <h3 class="tag-title">${p.name}</h3>
+            <div class="tag-unit">${p.unit}</div>
+            <div class="tag-price-row">
+              <span class="tag-price">₹${p.sellingPrice.toFixed(2)}</span>
+              <span class="tag-mrp">₹${p.mrp.toFixed(2)}</span>
+              ${discount > 0 ? `<span class="tag-save">Save ${discount}%</span>` : ''}
+            </div>
+          </div>
+          <div class="barcode-wrap">
+            <svg id="barcode-${idx}" class="barcode-svg"></svg>
+            <div class="tag-location">
+              <span>${p.shelfLocation}</span>
+              <span>SKU: ${p.barcode.slice(-6)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Generate real barcodes with JsBarcode
+    sampleProducts.forEach((p, idx) => {
+      try {
+        JsBarcode(`#barcode-${idx}`, p.barcode, {
+          format: "EAN13",
+          lineColor: "#0f172a",
+          width: 2,
+          height: 40,
+          displayValue: true,
+          fontSize: 12
+        });
+      } catch (e) {
+        // Fallback to Code128 if EAN checksum differs
+        JsBarcode(`#barcode-${idx}`, p.barcode, {
+          format: "CODE128",
+          lineColor: "#0f172a",
+          width: 2,
+          height: 40,
+          displayValue: true,
+          fontSize: 12
+        });
+      }
+    });
+  </script>
+</body>
+</html>
