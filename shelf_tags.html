@@ -1,272 +1,540 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartScan — Printable Supermarket Shelf Barcode Tags</title>
-  <!-- JsBarcode CDN for standard EAN-13 & Code128 generation -->
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartScan — Supermarket Shelf Edge Barcode Tags (150 SKUs)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body {
-      background: #f1f5f9;
-      color: #0f172a;
-      padding: 30px;
+    :root {
+      --primary: #059669;
+      --primary-dark: #047857;
+      --primary-light: #d1fae5;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
     }
-    .header-bar {
-      max-width: 1000px;
-      margin: 0 auto 24px;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Top Navigation / Action Bar */
+    .header-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #fff;
-      padding: 20px 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .header-bar h1 { font-size: 1.4rem; font-weight: 800; color: #0f172a; }
-    .header-bar p { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
-    .btn-print {
-      background: #10b981;
-      color: #06231a;
-      border: none;
-      padding: 10px 20px;
+
+    .title-group h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .actions-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 10px;
       font-weight: 700;
-      border-radius: 8px;
+      font-size: 0.88rem;
       cursor: pointer;
-      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
     }
-    .tags-grid {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border-color: #cbd5e1;
     }
-    .shelf-tag {
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-primary {
+      background: #0f172a;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .btn-emerald {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+    }
+    .btn-emerald:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* Filters row */
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      font-size: 0.88rem;
+      font-family: inherit;
       background: #fff;
-      border: 2px solid #0f172a;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+    .filter-select:focus {
+      border-color: var(--primary);
+    }
+
+    .stats-badge {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    /* Shelf Tags Grid */
+    .tags-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+    }
+
+    /* Shelf Tag Card */
+    .shelf-tag {
+      background: #ffffff;
+      border: 1.5px solid #0f172a;
+      border-radius: 12px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      position: relative;
+      box-shadow: var(--shadow-sm);
       page-break-inside: avoid;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .tag-cat {
-      font-size: 0.7rem;
-      font-weight: 800;
+
+    .shelf-tag:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+    }
+
+    .tag-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .tag-category {
+      font-size: 0.68rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #0284c7;
-    }
-    .tag-title {
-      font-size: 1.05rem;
       font-weight: 800;
-      margin: 4px 0 2px;
-      line-height: 1.3;
+      color: #0284c7;
+      letter-spacing: 0.05em;
     }
-    .tag-unit {
-      font-size: 0.78rem;
+
+    .tag-brand {
+      font-size: 0.72rem;
+      font-weight: 700;
       color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .tag-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #0f172a;
       margin-bottom: 8px;
     }
-    .tag-price-row {
+
+    .tag-pricing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 10px;
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+    }
+
+    .price-main {
       display: flex;
       align-items: baseline;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 4px;
     }
-    .tag-price {
-      font-size: 1.6rem;
+
+    .price-curr {
+      font-size: 1.45rem;
       font-weight: 900;
-      color: #0f172a;
+      color: #059669;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .tag-mrp {
-      font-size: 0.85rem;
+
+    .price-unit {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .price-mrp-group {
+      text-align: right;
+    }
+
+    .price-mrp {
+      font-size: 0.78rem;
       color: #94a3b8;
       text-decoration: line-through;
     }
-    .tag-save {
-      background: #fef3c7;
-      color: #b45309;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .barcode-wrap {
-      text-align: center;
-      background: #fafafa;
-      border-top: 1px dashed #cbd5e1;
-      padding-top: 10px;
-    }
-    .barcode-svg {
-      width: 100%;
-      height: 60px;
-    }
-    .tag-location {
+
+    .save-badge {
       font-size: 0.7rem;
-      color: #64748b;
-      margin-top: 4px;
-      display: flex;
-      justify-content: space-between;
+      font-weight: 800;
+      color: #b45309;
+      background: #fef3c7;
+      padding: 1px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 2px;
     }
 
+    .barcode-section {
+      background: #ffffff;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+      text-align: center;
+    }
+
+    .barcode-svg {
+      width: 100%;
+      height: 48px;
+    }
+
+    .tag-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 0.68rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .tag-location {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #475569;
+    }
+
+    /* Print Stylesheet */
     @media print {
-      body { background: #fff; padding: 0; }
-      .header-bar { display: none; }
-      .tags-grid { gap: 12px; }
-      .shelf-tag { border-width: 1px; }
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .header-panel {
+        display: none !important;
+      }
+      .tags-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+      }
+      .shelf-tag {
+        border: 1.5px solid #000000 !important;
+        box-shadow: none !important;
+        padding: 8px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .tag-pricing-row {
+        background: #ffffff !important;
+        border: 1px solid #ccc !important;
+      }
+      .save-badge {
+        border: 1px solid #000;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <!-- Header Control Bar -->
+    <div class="header-panel">
+      <div class="header-top">
+        <div class="title-group">
+          <h1>🏷️ Supermarket Shelf Barcode Tags</h1>
+          <p>Scan with your phone's camera in the Shopper App or print physical shelf tags (150 SKUs).</p>
+        </div>
+        <div class="actions-group">
+          <a href="/" class="btn btn-secondary">← Back to Portal</a>
+          <button class="btn btn-primary" onclick="setDensity('dense')">Compact (12/Page)</button>
+          <button class="btn btn-emerald" onclick="window.print()">🖨️ Print Shelf Tags Sheet</button>
+        </div>
+      </div>
 
-  <div class="header-bar">
-    <div>
-      <h1>Supermarket Shelf Edge Price Tags & Barcodes</h1>
-      <p>Scan these test barcodes directly with your phone's camera in the SmartScan PWA.</p>
+      <div class="controls-row">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search by Product Name, Brand, EAN-13 Barcode (e.g. 8900000000001)..." />
+        </div>
+
+        <select id="categoryFilter" class="filter-select">
+          <option value="All">All Categories</option>
+        </select>
+
+        <select id="brandFilter" class="filter-select">
+          <option value="All">All Brands</option>
+        </select>
+
+        <div class="stats-badge" id="countBadge">Showing 0 / 0 Tags</div>
+      </div>
     </div>
-    <div style="display:flex; gap:10px;">
-      <a href="index.html" style="background:#e2e8f0; color:#0f172a; text-decoration:none; padding:10px 18px; border-radius:8px; font-weight:700; font-size:0.9rem;">
-        ← Back to App
-      </a>
-      <button class="btn-print" onclick="window.print()">🖨️ Print Shelf Tags</button>
+
+    <!-- Tags Container -->
+    <div class="tags-grid" id="tagsContainer">
+      <div style="text-align:center; padding:40px; color:#64748b; grid-column:1/-1;">Loading product catalog & generating barcodes...</div>
     </div>
   </div>
 
-  <div class="tags-grid" id="tags-container"></div>
-
   <script>
-    const sampleProducts = [
-      {
-        barcode: "8901030383794",
-        name: "FarmFresh Organic Whole Milk",
-        category: "Dairy & Eggs",
-        unit: "1 Litre",
-        sellingPrice: 64.00,
-        mrp: 70.00,
-        shelfLocation: "Aisle 2 - Cooler B3"
-      },
-      {
-        barcode: "8901491101838",
-        name: "Artisan Sourdough Loaf",
-        category: "Bakery",
-        unit: "450g",
-        sellingPrice: 89.00,
-        mrp: 99.00,
-        shelfLocation: "Aisle 1 - Bakery Rack A"
-      },
-      {
-        barcode: "8901063012722",
-        name: "NuttyDelight Roasted Almonds",
-        category: "Snacks & Dry Fruits",
-        unit: "200g Pack",
-        sellingPrice: 220.00,
-        mrp: 250.00,
-        shelfLocation: "Aisle 4 - Rack 2"
-      },
-      {
-        barcode: "8901207040475",
-        name: "PureBrew Arabica Coffee Beans",
-        category: "Beverages",
-        unit: "250g Tin",
-        sellingPrice: 349.00,
-        mrp: 399.00,
-        shelfLocation: "Aisle 3 - Shelf C"
-      },
-      {
-        barcode: "8901725112111",
-        name: "Olea Vera Extra Virgin Olive Oil",
-        category: "Gourmet & Cooking",
-        unit: "500ml Glass Bottle",
-        sellingPrice: 520.00,
-        mrp: 599.00,
-        shelfLocation: "Aisle 5 - Endcap"
-      },
-      {
-        barcode: "8901030774219",
-        name: "HydraCare Daily Face Wash",
-        category: "Personal Care",
-        unit: "150ml Tube",
-        sellingPrice: 185.00,
-        mrp: 210.00,
-        shelfLocation: "Aisle 7 - Rack B"
-      },
-      {
-        barcode: "8902080000123",
-        name: "CrispHarvest Crisp Gala Apples",
-        category: "Fresh Produce",
-        unit: "1 kg Pack",
-        sellingPrice: 159.00,
-        mrp: 180.00,
-        shelfLocation: "Produce Section - Bin 4"
-      },
-      {
-        barcode: "8901111223344",
-        name: "SparkleBrite Dishwashing Liquid",
-        category: "Household & Cleaning",
-        unit: "750ml Pump",
-        sellingPrice: 135.00,
-        mrp: 155.00,
-        shelfLocation: "Aisle 8 - Shelf A2"
-      }
-    ];
+    const API_BASE = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3002' && window.location.port !== '3000'))
+      ? 'http://localhost:3002'
+      : '';
 
-    const container = document.getElementById('tags-container');
-    container.innerHTML = sampleProducts.map((p, idx) => {
-      const discount = Math.round(((p.mrp - p.sellingPrice) / p.mrp) * 100);
-      return `
-        <div class="shelf-tag">
-          <div>
-            <span class="tag-cat">${p.category}</span>
-            <h3 class="tag-title">${p.name}</h3>
-            <div class="tag-unit">${p.unit}</div>
-            <div class="tag-price-row">
-              <span class="tag-price">₹${p.sellingPrice.toFixed(2)}</span>
-              <span class="tag-mrp">₹${p.mrp.toFixed(2)}</span>
-              ${discount > 0 ? `<span class="tag-save">Save ${discount}%</span>` : ''}
-            </div>
-          </div>
-          <div class="barcode-wrap">
-            <svg id="barcode-${idx}" class="barcode-svg"></svg>
-            <div class="tag-location">
-              <span>${p.shelfLocation}</span>
-              <span>SKU: ${p.barcode.slice(-6)}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    let allProducts = [];
 
-    // Generate real barcodes with JsBarcode
-    sampleProducts.forEach((p, idx) => {
+    async function fetchAndRenderTags() {
       try {
-        JsBarcode(`#barcode-${idx}`, p.barcode, {
-          format: "EAN13",
-          lineColor: "#0f172a",
-          width: 2,
-          height: 40,
-          displayValue: true,
-          fontSize: 12
-        });
-      } catch (e) {
-        // Fallback to Code128 if EAN checksum differs
-        JsBarcode(`#barcode-${idx}`, p.barcode, {
-          format: "CODE128",
-          lineColor: "#0f172a",
-          width: 2,
-          height: 40,
-          displayValue: true,
-          fontSize: 12
-        });
+        const res = await fetch(`${API_BASE}/api/products`);
+        const json = await res.json();
+        allProducts = json.data || [];
+
+        populateFilters(allProducts);
+        applyFilter();
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        document.getElementById('tagsContainer').innerHTML = `
+          <div style="text-align:center; padding:40px; color:#ef4444; grid-column:1/-1;">
+            Failed to load products. Please ensure the backend server is running.
+          </div>
+        `;
       }
-    });
+    }
+
+    function populateFilters(products) {
+      const categories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))].sort();
+      const brands = ['All', ...new Set(products.map(p => p.brand).filter(Boolean))].sort();
+
+      const catSelect = document.getElementById('categoryFilter');
+      catSelect.innerHTML = categories.map(c => `<option value="${c}">${c === 'All' ? 'All Categories (' + products.length + ')' : c}</option>`).join('');
+
+      const brandSelect = document.getElementById('brandFilter');
+      brandSelect.innerHTML = brands.map(b => `<option value="${b}">${b === 'All' ? 'All Brands' : b}</option>`).join('');
+    }
+
+    function applyFilter() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const selectedCat = document.getElementById('categoryFilter').value;
+      const selectedBrand = document.getElementById('brandFilter').value;
+
+      const filtered = allProducts.filter(p => {
+        const matchQuery = !query ||
+          p.name.toLowerCase().includes(query) ||
+          p.barcode.toLowerCase().includes(query) ||
+          (p.brand && p.brand.toLowerCase().includes(query)) ||
+          (p.category && p.category.toLowerCase().includes(query));
+
+        const matchCat = selectedCat === 'All' || p.category === selectedCat;
+        const matchBrand = selectedBrand === 'All' || p.brand === selectedBrand;
+
+        return matchQuery && matchCat && matchBrand;
+      });
+
+      document.getElementById('countBadge').innerText = `Showing ${filtered.length} / ${allProducts.length} Tags`;
+      renderTagsGrid(filtered);
+    }
+
+    function renderTagsGrid(products) {
+      const container = document.getElementById('tagsContainer');
+      if (products.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:50px; color:#64748b; grid-column:1/-1;">No products found matching your search.</div>`;
+        return;
+      }
+
+      container.innerHTML = products.map((p, idx) => {
+        const mrp = Number(p.mrp || p.sellingPrice);
+        const price = Number(p.sellingPrice);
+        const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+        const svgId = `barcode-${idx}`;
+
+        return `
+          <div class="shelf-tag">
+            <div>
+              <div class="tag-header">
+                <span class="tag-category">${p.category || 'General'}</span>
+                <span class="tag-brand">${p.brand || 'Store'}</span>
+              </div>
+              <h2 class="tag-title">${p.name}</h2>
+              <div class="tag-pricing-row">
+                <div class="price-main">
+                  <span class="price-curr">₹${price.toFixed(0)}</span>
+                  <span class="price-unit">/${p.unit || 'unit'}</span>
+                </div>
+                <div class="price-mrp-group">
+                  <div class="price-mrp">MRP: ₹${mrp.toFixed(0)}</div>
+                  ${discount > 0 ? `<span class="save-badge">SAVE ${discount}%</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="barcode-section">
+              <svg id="${svgId}" class="barcode-svg"></svg>
+              <div class="tag-footer">
+                <span class="tag-location">📍 ${p.shelfLocation || 'Aisle 1'}</span>
+                <span>EXP: ${p.expiryDate || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Generate Barcodes using JsBarcode
+      products.forEach((p, idx) => {
+        const svgElement = document.getElementById(`barcode-${idx}`);
+        if (!svgElement) return;
+
+        try {
+          JsBarcode(svgElement, p.barcode, {
+            format: "CODE128",
+            width: 1.5,
+            height: 38,
+            displayValue: true,
+            fontSize: 11,
+            font: 'JetBrains Mono, monospace',
+            lineColor: "#0f172a",
+            margin: 0
+          });
+        } catch (err) {
+          console.error(`Barcode rendering error for ${p.barcode}:`, err);
+        }
+      });
+    }
+
+    function setDensity(mode) {
+      const grid = document.getElementById('tagsContainer');
+      if (mode === 'dense') {
+        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(240px, 1fr))';
+      } else {
+        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(290px, 1fr))';
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', applyFilter);
+    document.getElementById('categoryFilter').addEventListener('change', applyFilter);
+    document.getElementById('brandFilter').addEventListener('change', applyFilter);
+
+    document.addEventListener('DOMContentLoaded', fetchAndRenderTags);
   </script>
 </body>
 </html>
