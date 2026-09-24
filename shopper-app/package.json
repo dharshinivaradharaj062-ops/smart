@@ -1,20 +1,18 @@
 {
-  "name": "smartscan-supermarket-suite",
+  "name": "smartscan-shopper-app",
   "version": "2.0.0",
-  "description": "SmartScan Retail Suite - Separated Shopper App and Store Operations Portal",
+  "description": "SmartScan Customer Self-Scanning Mobile Web App (PWA)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "start:shopper": "cd shopper-app && node server.js",
-    "start:manager": "cd manager-app && node server.js"
+    "dev": "node server.js"
   },
   "keywords": [
     "pwa",
     "self-checkout",
     "shopper-app",
-    "manager-portal",
     "barcode-scanner",
-    "supermarket"
+    "smartscan"
   ],
   "author": "Antigravity Engineering",
   "license": "MIT",

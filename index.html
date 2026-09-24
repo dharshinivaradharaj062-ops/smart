@@ -2,760 +2,229 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#10b981" />
-  <meta name="description" content="SmartScan - Zero Queue Supermarket Self-Checkout PWA & Store Operations Platform" />
-  <title>SmartScan — Supermarket Self-Checkout PWA</title>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <title>SmartScan — Application Gateway & Portal Switcher</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json" />
-
-  <!-- Html5Qrcode Cross-Platform Barcode Engine CDN -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 38, 0.9);
+      --border: rgba(255, 255, 255, 0.12);
+      --primary: #10b981;
+      --secondary: #6366f1;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, var(--bg) 75%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .hub-container {
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+    }
+    .brand-header {
+      margin-bottom: 36px;
+    }
+    .brand-icon {
+      font-size: 3.2rem;
+      margin-bottom: 8px;
+    }
+    .brand-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+    .brand-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    .app-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px 24px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .app-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+    }
+    .app-card.shopper:hover { border-color: var(--primary); }
+    .app-card.manager:hover { border-color: var(--secondary); }
+    .card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 18px;
+    }
+    .shopper .card-icon {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--primary);
+    }
+    .manager .card-icon {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid var(--secondary);
+    }
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .creds-box {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.8rem;
+      margin-bottom: 22px;
+    }
+    .creds-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .creds-line:last-child { margin-bottom: 0; }
+    .creds-val {
+      color: #38bdf8;
+      font-family: monospace;
+      font-weight: 700;
+    }
+    .btn-launch {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      color: #fff;
+    }
+    .shopper .btn-launch {
+      background: linear-gradient(135deg, var(--primary), #059669);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+    }
+    .manager .btn-launch {
+      background: linear-gradient(135deg, var(--secondary), #4f46e5);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+    }
+    .btn-launch:hover {
+      filter: brightness(1.1);
+      transform: scale(1.02);
+    }
+    .env-note {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
 <body>
 
-  <!-- =========================================================================
-       1. GLOBAL TOP NAVIGATION & ROLE SWITCHER
-       ========================================================================= -->
-  <header class="top-role-bar">
-    <div class="brand-badge">
+  <div class="hub-container">
+    <div class="brand-header">
       <div class="brand-icon">⚡</div>
-      <span>SmartScan<span style="color:var(--primary);">.AI</span></span>
+      <h1 class="brand-title">SmartScan Retail Suite</h1>
+      <p class="brand-subtitle">Select the portal you wish to open. Each app is 100% standalone and isolated.</p>
     </div>
 
-    <nav class="role-nav-group" aria-label="Role Switcher">
-      <button class="role-btn active" data-role="shopper" id="nav-role-shopper">
-        <span>🛍️</span> <span>Shopper</span>
-      </button>
-      <button class="role-btn" data-role="manager" id="nav-role-manager">
-        <span>👔</span> <span>Manager</span>
-      </button>
-      <button class="role-btn" data-role="guard" id="nav-role-guard">
-        <span>🛡️</span> <span>Exit Gate</span>
-      </button>
-    </nav>
-  </header>
+    <div class="apps-grid">
 
-  <!-- =========================================================================
-       2. QUICK TEST BARCODE SIMULATOR (1-Click Test for Desktop / Webcam-less)
-       ========================================================================= -->
-  <aside class="quick-simulator-bar" id="simulator-bar">
-    <div class="sim-label">⚡ Quick Scan Test:</div>
-    <div id="simulator-chips-container" style="display:flex; gap:8px;">
-      <!-- Populated dynamically from catalog -->
+      <!-- APP 1: SHOPPER CUSTOMER PORTAL -->
+      <div class="app-card shopper">
+        <div>
+          <div class="card-icon">🛍️</div>
+          <h2 class="card-title">Shopper Mobile Portal</h2>
+          <p class="card-desc">Customer mobile self-scanning PWA with camera barcode scanner, live detection card, interactive cart, itemized GST calculation, coupon discounts, and instant UPI/Card checkout.</p>
+          
+          <div class="creds-box">
+            <div style="font-weight:700; color:var(--primary); margin-bottom:6px;">📱 .env Demo Credentials:</div>
+            <div class="creds-line">
+              <span style="color:var(--text-muted);">Phone / User ID:</span>
+              <span class="creds-val">9876543210</span>
+            </div>
+            <div class="creds-line">
+              <span style="color:var(--text-muted);">Password:</span>
+              <span class="creds-val">shopper123</span>
+            </div>
+          </div>
+        </div>
+
+        <a href="./shopper-app/index.html" class="btn-launch">
+          Open Shopper App (Port 3001) →
+        </a>
+      </div>
+
+      <!-- APP 2: MANAGER & SECURITY OPERATIONS PORTAL -->
+      <div class="app-card manager">
+        <div>
+          <div class="card-icon">👔</div>
+          <h2 class="card-title">Manager & Guard Portal</h2>
+          <p class="card-desc">Operations hub for store managers (full SKU CRUD, stock adjustments, peak hours analytics charts, CSV export) and security guards (exit gate QR verification & bag audit).</p>
+          
+          <div class="creds-box">
+            <div style="font-weight:700; color:#818cf8; margin-bottom:6px;">🔐 .env Demo Credentials:</div>
+            <div class="creds-line">
+              <span style="color:var(--text-muted);">Manager:</span>
+              <span class="creds-val">admin / SmartStore@2026</span>
+            </div>
+            <div class="creds-line">
+              <span style="color:var(--text-muted);">Manager PIN:</span>
+              <span class="creds-val">1234</span>
+            </div>
+            <div class="creds-line">
+              <span style="color:var(--text-muted);">Guard PIN:</span>
+              <span class="creds-val">5678</span>
+            </div>
+          </div>
+        </div>
+
+        <a href="./manager-app/index.html" class="btn-launch">
+          Open Manager & Guard Portal (Port 3002) →
+        </a>
+      </div>
+
     </div>
-    <a href="shelf_tags.html" target="_blank" class="sim-chip" style="background:rgba(99,102,241,0.2); border-color:var(--accent); color:#fff;">
-      🏷️ Printable Shelf Tags ↗
-    </a>
-  </aside>
 
-  <!-- Toast Message Hub -->
-  <div class="toast-container" id="toast-container"></div>
-
-  <!-- Main Container -->
-  <main class="app-container">
-
-    <!-- =======================================================================
-         DOMAIN 1: SHOPPER MOBILE VIEW
-         ======================================================================= -->
-    <section id="view-shopper" class="view-section active">
-      <div class="shopper-layout">
-
-        <!-- STEP 1: Shopper Onboarding / Guest Login -->
-        <div id="shopper-onboarding-sec">
-          <div class="onboarding-card">
-            <div class="onboarding-hero-icon">🛒</div>
-            <h1 class="onboarding-title">Skip The Checkout Line</h1>
-            <p class="onboarding-subtitle">Scan items as you put them in your cart, pay digitally, and breeze through the exit gate.</p>
-
-            <form id="shopper-onboarding-form">
-              <div class="input-field-group">
-                <label for="onboard-name">Your Full Name</label>
-                <input type="text" id="onboard-name" class="input-text" placeholder="e.g. Alex Sharma" value="Alex Sharma" required />
-              </div>
-
-              <div class="input-field-group">
-                <label for="onboard-phone">Mobile Number</label>
-                <input type="tel" id="onboard-phone" class="input-text" placeholder="e.g. 9876543210" value="9876543210" required />
-              </div>
-
-              <button type="submit" class="btn-primary" id="btn-start-shopping" style="margin-top:10px;">
-                <span>Start Smart Shopping</span> <span>→</span>
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <!-- STEP 2: Live In-Store Self-Scanning & Cart -->
-        <div id="shopper-scanning-sec" style="display:none;">
-
-          <!-- Session Bar -->
-          <div class="session-bar">
-            <div class="session-user-info">
-              <div class="user-avatar-badge">👤</div>
-              <div>
-                <strong id="shopper-user-display" style="display:block; font-size:0.95rem;">Shopper</strong>
-                <span class="store-tag">📍 Smart Supermarket • Store #104</span>
-              </div>
-            </div>
-            <button class="btn-secondary" style="padding:6px 10px; font-size:0.75rem;" onclick="localStorage.removeItem('smartscan_shopper'); location.reload();">
-              Exit Store
-            </button>
-          </div>
-
-          <!-- Camera Scanner Viewport -->
-          <div class="scanner-card">
-            <div class="scanner-view-container">
-              <div id="reader-container"></div>
-              
-              <!-- Laser Scanner Aim Reticle -->
-              <div class="scanner-laser-box">
-                <div class="reticle-corner reticle-tl"></div>
-                <div class="reticle-corner reticle-tr"></div>
-                <div class="reticle-corner reticle-bl"></div>
-                <div class="reticle-corner reticle-br"></div>
-              </div>
-
-              <!-- Scanner Overlay Controls -->
-              <div class="scanner-overlay-controls">
-                <div class="scanner-status-chip">
-                  <div class="pulse-dot"></div>
-                  <span id="scanner-status-text">Point camera at shelf barcode</span>
-                </div>
-                <div style="display:flex; gap:6px;">
-                  <button type="button" class="scanner-tool-btn" id="scanner-torch-btn" title="Toggle Flashlight">💡</button>
-                  <button type="button" class="scanner-tool-btn" id="scanner-flip-btn" title="Flip Camera / Switch Webcam">🔄</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Laptop & Mobile Camera Quick Controls -->
-          <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-            <button type="button" class="btn-secondary" id="btn-restart-camera" style="flex:1; padding:8px 12px; font-size:0.8rem;">
-              🎥 Start Laptop Webcam
-            </button>
-            <label class="btn-secondary" style="flex:1; padding:8px 12px; font-size:0.8rem; cursor:pointer; text-align:center;">
-              📁 Upload Barcode Photo
-              <input type="file" id="barcode-file-input" accept="image/*" style="display:none;" />
-            </label>
-            <button type="button" class="btn-secondary" id="btn-camera-help" style="padding:8px 10px; font-size:0.8rem;" title="Camera Permission Help">
-              ❓ Help
-            </button>
-          </div>
-
-          <!-- Camera Permission Troubleshooting Notice -->
-          <div id="camera-permission-box" style="display:none; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); border-radius:12px; padding:12px; margin-bottom:14px; font-size:0.8rem; color:#fde68a;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <strong>⚠️ Laptop Camera Troubleshooting:</strong>
-              <button type="button" style="background:none; border:none; color:#fde68a; cursor:pointer;" onclick="document.getElementById('camera-permission-box').style.display='none'">✕</button>
-            </div>
-            <ol style="margin-left:18px; line-height:1.6;">
-              <li><strong>Chrome / Edge:</strong> Click the <strong>lock / tune icon 🔒</strong> at the top left of the address bar -> toggle <strong>Camera: Allow</strong> -> Refresh.</li>
-              <li><strong>Local File Warning:</strong> Some browsers block webcams under <code>file://</code>. Run with Node.js server (<code>node server.js</code>) or click <strong>Upload Barcode Photo</strong> / use the <strong>Quick Scan Test bar</strong> above!</li>
-              <li><strong>Privacy Shutter:</strong> Ensure your laptop webcam physical slider/switch is open.</li>
-            </ol>
-          </div>
-
-          <!-- Manual Barcode Search Fallback -->
-          <form id="manual-barcode-form" class="manual-barcode-form">
-            <input type="text" id="manual-barcode-input" class="input-text" placeholder="Type barcode (e.g. 8901030383794)..." />
-            <button type="submit" class="btn-secondary" style="white-space:nowrap;">Scan Code</button>
-          </form>
-
-          <!-- Detected Product Bottom Sheet / Card -->
-          <div id="detection-card" class="detection-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="product-category-tag" id="det-cat">Category</span>
-              <button type="button" id="det-close-btn" class="close-btn" style="width:24px; height:24px; font-size:0.75rem;">✕</button>
-            </div>
-
-            <div class="product-row">
-              <img id="det-img" src="" alt="Product" class="product-thumb" />
-              <div class="product-info">
-                <h3 id="det-title" class="product-title">Product Name</h3>
-                <div id="det-unit" class="product-unit">1 Unit</div>
-                <div class="product-price-line">
-                  <span id="det-price" class="price-current">₹0.00</span>
-                  <span id="det-mrp" class="price-mrp">₹0.00</span>
-                  <span id="det-discount" class="discount-badge">10% OFF</span>
-                </div>
-                <div id="det-stock" class="stock-indicator in-stock">✓ In Stock</div>
-              </div>
-            </div>
-
-            <div class="qty-action-row">
-              <div class="qty-stepper">
-                <button type="button" class="qty-btn" id="det-qty-minus">-</button>
-                <span class="qty-val" id="det-qty-val">1</span>
-                <button type="button" class="qty-btn" id="det-qty-plus">+</button>
-              </div>
-              <button type="button" class="btn-primary" id="det-add-btn" style="width:auto; padding:10px 20px;">
-                <span>+ Add to Cart</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Interactive Cart & Billing Drawer -->
-          <div class="cart-sheet">
-            <div class="cart-header">
-              <div class="cart-title">
-                <span>🛒 My Billed Cart</span>
-                <span class="stock-badge good" id="cart-count-badge">0 items</span>
-              </div>
-            </div>
-
-            <div id="cart-empty-state" style="text-align:center; padding:24px; color:var(--text-dim); font-size:0.88rem;">
-              <div style="font-size:2rem; margin-bottom:6px;">📦</div>
-              Your cart is empty. Scan product barcodes from the store shelves to add items.
-            </div>
-
-            <!-- Itemized List -->
-            <div id="cart-items-list" class="cart-items-list"></div>
-
-            <!-- Coupon Code Section -->
-            <div style="margin-top:14px; display:flex; gap:8px;">
-              <input type="text" id="coupon-input" class="input-text" placeholder="Promo Code (SMART10, SAVE50)" style="padding:8px 12px; font-size:0.85rem;" />
-              <button type="button" class="btn-secondary" id="apply-coupon-btn" style="padding:8px 14px; font-size:0.85rem;">Apply</button>
-            </div>
-            <div id="coupon-msg" style="font-size:0.75rem; margin-top:4px;"></div>
-
-            <!-- Tax & Bill Breakdown -->
-            <div class="bill-breakdown">
-              <div class="bill-line">
-                <span>Items Subtotal:</span>
-                <span id="bill-subtotal">₹0.00</span>
-              </div>
-              <div class="bill-line">
-                <span>GST / VAT (Itemized):</span>
-                <span id="bill-tax">₹0.00</span>
-              </div>
-              <div class="bill-line savings">
-                <span>Total Savings / Discount:</span>
-                <span id="bill-savings">₹0.00</span>
-              </div>
-              <div class="bill-line grand-total">
-                <span>Grand Total:</span>
-                <span class="grand-total-amount" id="bill-grand-total">₹0.00</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Sticky Floating Checkout Bar (Mobile) -->
-        <div id="bottom-checkout-bar" class="bottom-checkout-bar" style="display:none;">
-          <div class="checkout-summary">
-            <span class="checkout-total-label" id="bottom-item-count">0 items</span>
-            <span class="checkout-total-val" id="bottom-grand-total">₹0.00</span>
-          </div>
-          <button type="button" class="btn-primary" id="open-checkout-modal-btn" style="width:auto; padding:12px 24px;">
-            <span>Pay & Exit</span> <span>→</span>
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- =======================================================================
-         DOMAIN 2: STORE MANAGER & ADMIN PORTAL
-         ======================================================================= -->
-    <section id="view-manager" class="view-section">
-      
-      <!-- Manager Top Header -->
-      <div class="admin-header">
-        <div class="admin-title-wrap">
-          <h1>Store Operations & Catalog Hub</h1>
-          <p>Real-time inventory levels, active shopper carts, and automated security audit logs.</p>
-        </div>
-        <div class="admin-action-row">
-          <button type="button" class="btn-secondary" id="btn-export-catalog">📥 Export CSV</button>
-          <button type="button" class="btn-primary" onclick="window.SmartScanApp.openModal('add-product-modal')">
-            <span>+ Add New SKU</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Live KPI Metrics Grid -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-header">
-            <span>Today's Self-Checkout Rev</span>
-            <div class="metric-icon rev">₹</div>
-          </div>
-          <div class="metric-value" id="kpi-revenue">₹0.00</div>
-          <div class="metric-trend up">↑ 28% vs traditional cashier lanes</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span>Total Digital Orders</span>
-            <div class="metric-icon orders">⚡</div>
-          </div>
-          <div class="metric-value" id="kpi-orders">0</div>
-          <div class="metric-trend up">Avg Checkout Time: 34s</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span>Average Basket Size</span>
-            <div class="metric-icon active-carts">🛒</div>
-          </div>
-          <div class="metric-value" id="kpi-basket">₹0.00</div>
-          <div class="metric-trend up">↑ 14% via shelf promos</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span>Low Stock Alerts</span>
-            <div class="metric-icon alert">⚠️</div>
-          </div>
-          <div class="metric-value" id="kpi-low-stock" style="color:var(--warning);">0</div>
-          <div class="metric-trend">Restock needed soon</div>
-        </div>
-      </div>
-
-      <!-- Navigation Tabs -->
-      <div class="admin-tabs">
-        <button class="admin-tab-btn active" data-tab="inventory">📦 Catalog & Stock Management</button>
-        <button class="admin-tab-btn" data-tab="orders">💳 Live Transactions & Carts</button>
-        <button class="admin-tab-btn" data-tab="analytics">📊 Peak Hours & Analytics</button>
-      </div>
-
-      <!-- PANEL 1: Catalog & Inventory Management (CRUD) -->
-      <div id="admin-panel-inventory" class="admin-panel">
-        <div class="filter-bar">
-          <input type="text" id="catalog-search-input" class="input-text search-input" placeholder="Search by product name, barcode (EAN-13), or brand..." />
-          <select id="catalog-category-filter" class="filter-select">
-            <option value="All">All Categories</option>
-            <option value="Dairy & Eggs">Dairy & Eggs</option>
-            <option value="Bakery">Bakery</option>
-            <option value="Snacks & Dry Fruits">Snacks & Dry Fruits</option>
-            <option value="Beverages">Beverages</option>
-            <option value="Gourmet & Cooking">Gourmet & Cooking</option>
-            <option value="Personal Care">Personal Care</option>
-            <option value="Fresh Produce">Fresh Produce</option>
-            <option value="Household & Cleaning">Household & Cleaning</option>
-          </select>
-        </div>
-
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Product & SKU</th>
-                <th>Barcode</th>
-                <th>Category</th>
-                <th>Price (MRP)</th>
-                <th>Stock Level</th>
-                <th>Aisle Location</th>
-                <th style="text-align:right;">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="inventory-table-body">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- PANEL 2: Live Transactions & Active Carts -->
-      <div id="admin-panel-orders" class="admin-panel" style="display:none;">
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Items</th>
-                <th>Total Billed</th>
-                <th>Gate Exit Status</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody id="orders-table-body">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- PANEL 3: Peak Hours & Analytics -->
-      <div id="admin-panel-analytics" class="admin-panel" style="display:none;">
-        <div class="analytics-grid">
-          <div class="chart-card">
-            <div class="chart-header">
-              <span>Peak Shopping Hours (Shopper Traffic)</span>
-              <span style="font-size:0.75rem; color:var(--text-muted);">Real-time checkout volume</span>
-            </div>
-            <div class="bar-chart" id="peak-hours-chart">
-              <!-- Rendered via JS -->
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <span>Top Self-Scanned Products</span>
-            </div>
-            <div class="top-products-list">
-              <div class="top-prod-item">
-                <div>
-                  <strong>FarmFresh Organic Whole Milk</strong>
-                  <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Dairy & Eggs</span>
-                </div>
-                <span class="stock-badge good">48 units</span>
-              </div>
-              <div class="top-prod-item">
-                <div>
-                  <strong>NuttyDelight Roasted Almonds</strong>
-                  <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Snacks</span>
-                </div>
-                <span class="stock-badge good">34 units</span>
-              </div>
-              <div class="top-prod-item">
-                <div>
-                  <strong>Artisan Sourdough Loaf</strong>
-                  <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Bakery</span>
-                </div>
-                <span class="stock-badge good">29 units</span>
-              </div>
-              <div class="top-prod-item">
-                <div>
-                  <strong>PureBrew Arabica Coffee Beans</strong>
-                  <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Beverages</span>
-                </div>
-                <span class="stock-badge good">21 units</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- =======================================================================
-         DOMAIN 3: SECURITY GUARD EXIT GATE VERIFICATION SCANNER
-         ======================================================================= -->
-    <section id="view-guard" class="view-section">
-      <div class="guard-layout">
-        <div class="guard-card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <div>
-              <h2 style="font-size:1.3rem; font-weight:800;">Exit Gate Security Pass Scanner</h2>
-              <p style="font-size:0.84rem; color:var(--text-muted);">Scan the customer's digital invoice QR code to verify payment and cross-check physical bag items.</p>
-            </div>
-            <div class="stock-badge good">🛡️ Gate #1 Active</div>
-          </div>
-
-          <!-- Guard Camera Viewport -->
-          <div class="scanner-card">
-            <div class="scanner-view-container" style="height:260px;">
-              <div id="guard-reader-container"></div>
-              
-              <div class="scanner-laser-box" style="width:70%; height:70%;">
-                <div class="reticle-corner reticle-tl"></div>
-                <div class="reticle-corner reticle-tr"></div>
-                <div class="reticle-corner reticle-bl"></div>
-                <div class="reticle-corner reticle-br"></div>
-              </div>
-
-              <div class="scanner-overlay-controls">
-                <div class="scanner-status-chip">
-                  <div class="pulse-dot"></div>
-                  <span id="guard-status-text">Ready to scan exit pass</span>
-                </div>
-                <button type="button" class="scanner-tool-btn" id="guard-scanner-flip-btn" title="Switch Webcam / Camera">🔄</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Verification Result Banners -->
-          <div id="guard-banner-verified" class="guard-result-banner verified">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:1.6rem;">✅</span>
-              <div>
-                <strong style="font-size:1.1rem; display:block;">PASS VERIFIED & CLEARED</strong>
-                <span id="guard-customer-info" style="font-size:0.82rem;">Payment confirmed. Zero discrepancies.</span>
-              </div>
-            </div>
-          </div>
-
-          <div id="guard-banner-already" class="guard-result-banner already-used">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:1.6rem;">⚠️</span>
-              <div>
-                <strong style="font-size:1.1rem; display:block;">SECURITY ALERT: PASS ALREADY USED</strong>
-                <span style="font-size:0.82rem;">This QR pass has already cleared the gate. Potential duplicate exit attempt.</span>
-              </div>
-            </div>
-          </div>
-
-          <div id="guard-banner-invalid" class="guard-result-banner invalid">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:1.6rem;">🚫</span>
-              <div>
-                <strong style="font-size:1.1rem; display:block;">INVALID / UNPAID QR PASS</strong>
-                <span style="font-size:0.82rem;">Cryptographic signature failed. Not found in system records.</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bag Inspection Item Checklist -->
-          <div id="guard-checklist-box" class="bag-audit-checklist" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <strong style="font-size:0.88rem; color:var(--secondary);">Physical Bag Audit Checklist:</strong>
-              <span style="font-size:0.75rem; color:var(--text-muted);">Check all items to confirm</span>
-            </div>
-            <div id="guard-checklist-items">
-              <!-- Populated dynamically -->
-            </div>
-            <button type="button" class="btn-primary" style="margin-top:12px; padding:10px;" onclick="window.SmartScanApp.showToast('Bag audit approved. Gate opened.', 'success'); document.getElementById('guard-checklist-box').style.display='none';">
-              ✓ Approve & Open Gate Turnstile
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- =========================================================================
-       MODAL 1: CHECKOUT & PAYMENT SELECTION
-       ========================================================================= -->
-  <div id="payment-modal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Instant Digital Checkout</h3>
-        <button type="button" class="close-btn" onclick="window.SmartScanApp.closeModal('payment-modal')">✕</button>
-      </div>
-
-      <!-- Payment Method Tabs -->
-      <div class="payment-tabs">
-        <div class="pay-tab active" data-method="upi">📱 UPI / QR</div>
-        <div class="pay-tab" data-method="card">💳 Cards</div>
-        <div class="pay-tab" data-method="counter">⚡ Fast Counter</div>
-      </div>
-
-      <!-- UPI Payment View -->
-      <div id="pay-view-upi" class="pay-method-view">
-        <div class="upi-qr-box">
-          <div style="font-size:0.82rem; font-weight:700; color:#0f172a; margin-bottom:8px;">Scan with GPay / PhonePe / Paytm</div>
-          <svg class="upi-qr-svg" viewBox="0 0 100 100">
-            <rect width="100" height="100" fill="#fff" />
-            <rect x="10" y="10" width="25" height="25" fill="#0f172a" />
-            <rect x="15" y="15" width="15" height="15" fill="#fff" />
-            <rect x="18" y="18" width="9" height="9" fill="#0f172a" />
-            <rect x="65" y="10" width="25" height="25" fill="#0f172a" />
-            <rect x="70" y="15" width="15" height="15" fill="#fff" />
-            <rect x="73" y="18" width="9" height="9" fill="#0f172a" />
-            <rect x="10" y="65" width="25" height="25" fill="#0f172a" />
-            <rect x="15" y="70" width="15" height="15" fill="#fff" />
-            <rect x="18" y="73" width="9" height="9" fill="#0f172a" />
-            <rect x="45" y="15" width="8" height="8" fill="#0f172a" />
-            <rect x="45" y="30" width="8" height="8" fill="#0f172a" />
-            <rect x="45" y="45" width="12" height="12" fill="#0f172a" />
-            <rect x="65" y="45" width="12" height="12" fill="#0f172a" />
-            <rect x="45" y="65" width="15" height="8" fill="#0f172a" />
-            <rect x="70" y="70" width="15" height="15" fill="#0f172a" />
-          </svg>
-          <span style="font-size:0.75rem; color:#64748b; margin-top:6px;">UPI ID: smartscan.store104@icici</span>
-        </div>
-
-        <button type="button" class="btn-primary" id="btn-confirm-upi">
-          <span>✓ Simulate Instant UPI Payment</span>
-        </button>
-      </div>
-
-      <!-- Card Payment View -->
-      <div id="pay-view-card" class="pay-method-view" style="display:none;">
-        <div class="input-field-group">
-          <label>Card Number</label>
-          <input type="text" class="input-text" placeholder="•••• •••• •••• 4242" value="4532 •••• •••• 8899" />
-        </div>
-        <div style="display:flex; gap:10px;">
-          <div class="input-field-group" style="flex:1;">
-            <label>Expiry</label>
-            <input type="text" class="input-text" placeholder="MM/YY" value="08/29" />
-          </div>
-          <div class="input-field-group" style="flex:1;">
-            <label>CVV</label>
-            <input type="password" class="input-text" placeholder="•••" value="888" />
-          </div>
-        </div>
-        <button type="button" class="btn-primary" id="btn-confirm-card" style="margin-top:8px;">
-          <span>Pay via Debit/Credit Card</span>
-        </button>
-      </div>
-
-      <!-- Fast Counter Cash View -->
-      <div id="pay-view-counter" class="pay-method-view" style="display:none;">
-        <div style="text-align:center; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; margin-bottom:16px;">
-          <div style="font-size:2rem; margin-bottom:4px;">⚡</div>
-          <strong>Express Cash Counter Slip</strong>
-          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
-            Show your barcode at Counter #01 for 10-second cash payment.
-          </p>
-        </div>
-        <button type="button" class="btn-primary" id="btn-confirm-counter">
-          <span>Generate Fast Counter Barcode</span>
-        </button>
-      </div>
-
+    <div class="env-note">
+      💡 Both folders (<code>/shopper-app</code> and <code>/manager-app</code>) have their own independent <code>.env</code>, <code>server.js</code>, and <code>index.html</code> files.
     </div>
   </div>
 
-  <!-- =========================================================================
-       MODAL 2: TAMPER-PROOF DIGITAL INVOICE & EXIT GATE PASS
-       ========================================================================= -->
-  <div id="exit-pass-modal" class="modal-backdrop">
-    <div class="modal-content" style="max-width:420px;">
-      
-      <div class="exit-pass-card">
-        <div class="exit-pass-watermark">PAID & VERIFIED</div>
-
-        <div style="text-align:center;">
-          <div class="exit-status-pill">
-            <span>●</span> <span>PAID & AUTHENTICATED</span>
-          </div>
-
-          <h2 style="font-size:1.3rem; font-weight:800; color:#fff;">Security Gate Exit Pass</h2>
-          <div style="font-size:0.78rem; color:var(--text-muted);">Smart Supermarket • Order #<span id="pass-order-num">ORD-0000</span></div>
-
-          <!-- Cryptographic Exit QR Container -->
-          <div class="exit-qr-container" id="pass-qr-box">
-            <!-- Rendered SVG QR via JS -->
-          </div>
-
-          <div>
-            <span class="exit-timer-chip">Time: <span id="pass-date">12:00:00</span></span>
-          </div>
-        </div>
-
-        <div style="margin-top:16px; border-top:1px dashed var(--border-glass); padding-top:12px;">
-          <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:6px;">
-            <span style="color:var(--text-muted);">Total Amount Paid:</span>
-            <strong id="pass-total" style="color:var(--primary); font-size:1.05rem;">₹0.00</strong>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:10px;">
-            <span style="color:var(--text-muted);">Billed Items:</span>
-            <span id="pass-items-count" style="color:#fff; font-weight:600;">0 items</span>
-          </div>
-
-          <div id="pass-items-summary" style="max-height:100px; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px;">
-            <!-- Summary list -->
-          </div>
-        </div>
-
-        <div style="margin-top:16px; display:flex; gap:10px;">
-          <button type="button" class="btn-secondary" style="flex:1;" onclick="window.SmartScanApp.closeModal('exit-pass-modal')">
-            Done
-          </button>
-          <button type="button" class="btn-primary" style="flex:1;" onclick="window.SmartScanApp.closeModal('exit-pass-modal'); window.SmartScanApp.switchRole('guard');">
-            <span>Test at Exit Gate →</span>
-          </button>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       MODAL 3: ADD NEW SKU / PRODUCT (Manager CRUD)
-       ========================================================================= -->
-  <div id="add-product-modal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Add New Product to Catalog</h3>
-        <button type="button" class="close-btn" onclick="window.SmartScanApp.closeModal('add-product-modal')">✕</button>
-      </div>
-
-      <form id="add-product-form">
-        <div class="input-field-group">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label for="new-sku-barcode">Barcode (EAN-13 / UPC)</label>
-            <button type="button" id="btn-gen-barcode" style="background:none; border:none; color:var(--secondary); font-size:0.75rem; cursor:pointer;">
-              ⚡ Auto Generate
-            </button>
-          </div>
-          <input type="text" id="new-sku-barcode" class="input-text" placeholder="e.g. 8901234567890" required />
-        </div>
-
-        <div class="input-field-group">
-          <label for="new-sku-name">Product Name</label>
-          <input type="text" id="new-sku-name" class="input-text" placeholder="e.g. Pure Honey 500g" required />
-        </div>
-
-        <div style="display:flex; gap:10px;">
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-category">Category</label>
-            <select id="new-sku-category" class="filter-select" style="width:100%;">
-              <option value="Dairy & Eggs">Dairy & Eggs</option>
-              <option value="Bakery">Bakery</option>
-              <option value="Snacks & Dry Fruits">Snacks & Dry Fruits</option>
-              <option value="Beverages">Beverages</option>
-              <option value="Gourmet & Cooking">Gourmet & Cooking</option>
-              <option value="Personal Care">Personal Care</option>
-              <option value="Fresh Produce">Fresh Produce</option>
-              <option value="Household & Cleaning">Household & Cleaning</option>
-            </select>
-          </div>
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-unit">Unit / Size</label>
-            <input type="text" id="new-sku-unit" class="input-text" placeholder="e.g. 500g, 1L" value="500g" required />
-          </div>
-        </div>
-
-        <div style="display:flex; gap:10px;">
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-cost">Cost Price (₹)</label>
-            <input type="number" step="0.01" id="new-sku-cost" class="input-text" placeholder="70.00" value="70.00" />
-          </div>
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-selling">Selling Price (₹)</label>
-            <input type="number" step="0.01" id="new-sku-selling" class="input-text" placeholder="99.00" value="99.00" required />
-          </div>
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-mrp">MRP (₹)</label>
-            <input type="number" step="0.01" id="new-sku-mrp" class="input-text" placeholder="110.00" value="110.00" />
-          </div>
-        </div>
-
-        <div style="display:flex; gap:10px;">
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-stock">Initial Stock</label>
-            <input type="number" id="new-sku-stock" class="input-text" placeholder="50" value="50" />
-          </div>
-          <div class="input-field-group" style="flex:1;">
-            <label for="new-sku-threshold">Low Threshold</label>
-            <input type="number" id="new-sku-threshold" class="input-text" placeholder="10" value="10" />
-          </div>
-        </div>
-
-        <div class="input-field-group">
-          <label for="new-sku-shelf">Aisle / Shelf Location</label>
-          <input type="text" id="new-sku-shelf" class="input-text" placeholder="e.g. Aisle 3 - Shelf B" value="Aisle 3 - Shelf B" />
-        </div>
-
-        <button type="submit" class="btn-primary" style="margin-top:10px;">
-          <span>Add SKU to Store Catalog</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Application Scripts -->
-  <script src="scanner.js"></script>
-  <script src="app.js"></script>
 </body>
 </html>

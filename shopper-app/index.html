@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#10b981" />
+  <meta name="description" content="SmartScan Shopper - Self-Scanning Mobile PWA & Instant Digital Checkout" />
+  <title>SmartScan — Customer Self-Checkout PWA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Html5Qrcode Barcode & QR Engine CDN -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. TOP HEADER NAVIGATION
+       ========================================================================= -->
+  <header class="top-nav-bar">
+    <div class="brand-badge">
+      <div class="brand-icon">⚡</div>
+      <span>SmartScan<span style="color:var(--primary);">.Shopper</span></span>
+    </div>
+
+    <div class="top-user-pill" id="header-user-pill">
+      <span>🛍️ Customer PWA</span>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       2. QUICK TEST BARCODE SIMULATOR BAR
+       ========================================================================= -->
+  <aside class="quick-simulator-bar" id="simulator-bar">
+    <div class="sim-label">⚡ Quick Test:</div>
+    <div id="simulator-chips-container" style="display:flex; gap:8px;">
+      <!-- Populated dynamically from catalog -->
+    </div>
+  </aside>
+
+  <!-- Toast Notification Hub -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- =======================================================================
+         VIEW 1: AUTHENTICATION & ONBOARDING (Login / Register / Guest)
+         ======================================================================= -->
+    <section id="shopper-auth-sec" class="auth-wrapper">
+      <div class="onboarding-card">
+        <div class="onboarding-hero-icon">🛒</div>
+        <h1 class="onboarding-title">Skip The Checkout Line</h1>
+        <p class="onboarding-subtitle">Scan products directly from the supermarket shelf, pay instantly, and walk out with your Exit Pass.</p>
+
+        <!-- Auth Navigation Tabs -->
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab-btn active" id="auth-tab-login">Member Login</button>
+          <button type="button" class="auth-tab-btn" id="auth-tab-register">New Account</button>
+          <button type="button" class="auth-tab-btn" id="auth-tab-guest">Quick Guest</button>
+        </div>
+
+        <!-- Tab 1: Member Login Form -->
+        <form id="form-login">
+          <div class="input-field-group">
+            <label for="login-phone">Mobile Number / User ID</label>
+            <input type="tel" id="login-phone" class="input-text" placeholder="e.g. 9876543210" value="9876543210" required />
+          </div>
+
+          <div class="input-field-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" class="input-text" placeholder="Enter password" value="shopper123" required />
+          </div>
+
+          <div style="text-align:right; margin-bottom:14px;">
+            <span style="font-size:0.75rem; color:var(--text-muted);">Configured via <code>.env</code> credentials (Demo: <code>9876543210</code> / <code>shopper123</code>)</span>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-login-submit">
+            <span>Log In & Start Shopping</span> <span>→</span>
+          </button>
+        </form>
+
+        <!-- Tab 2: Registration Form -->
+        <form id="form-register" style="display:none;">
+          <div class="input-field-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" class="input-text" placeholder="e.g. Alex Sharma" required />
+          </div>
+
+          <div class="input-field-group">
+            <label for="reg-phone">Mobile Number</label>
+            <input type="tel" id="reg-phone" class="input-text" placeholder="e.g. 9876543210" required />
+          </div>
+
+          <div class="input-field-group">
+            <label for="reg-password">Create Password</label>
+            <input type="password" id="reg-password" class="input-text" placeholder="Minimum 6 characters" required />
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top:10px;">
+            <span>Create Account & Continue</span> <span>→</span>
+          </button>
+        </form>
+
+        <!-- Tab 3: Quick Guest Onboarding -->
+        <form id="form-guest" style="display:none;">
+          <div class="input-field-group">
+            <label for="guest-name">Your Name</label>
+            <input type="text" id="guest-name" class="input-text" placeholder="e.g. Alex" value="Shopper Alex" required />
+          </div>
+
+          <div class="input-field-group">
+            <label for="guest-phone">Mobile (For digital SMS receipt)</label>
+            <input type="tel" id="guest-phone" class="input-text" placeholder="9876543210" value="9876543210" required />
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top:10px;">
+            <span>Continue as Guest</span> <span>→</span>
+          </button>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         VIEW 2: LIVE IN-STORE SCANNING & CART
+         ======================================================================= -->
+    <section id="shopper-scan-sec" style="display:none;">
+
+      <!-- Session Status Bar -->
+      <div class="session-bar">
+        <div class="session-user-info">
+          <div class="user-avatar-badge">👤</div>
+          <div>
+            <strong id="shopper-user-display" style="display:block; font-size:0.95rem;">Shopper</strong>
+            <span class="store-tag">📍 Smart Supermarket • Store #104</span>
+          </div>
+        </div>
+        <button type="button" class="btn-secondary" id="btn-logout" style="padding:6px 10px; font-size:0.75rem;">
+          Exit Store
+        </button>
+      </div>
+
+      <!-- Camera Barcode Scanner Viewport -->
+      <div class="scanner-card">
+        <div class="scanner-view-container">
+          <div id="reader-container"></div>
+          
+          <!-- Laser Aim Reticle -->
+          <div class="scanner-laser-box">
+            <div class="reticle-corner reticle-tl"></div>
+            <div class="reticle-corner reticle-tr"></div>
+            <div class="reticle-corner reticle-bl"></div>
+            <div class="reticle-corner reticle-br"></div>
+          </div>
+
+          <!-- Scanner Overlay Status & Tools -->
+          <div class="scanner-overlay-controls">
+            <div class="scanner-status-chip">
+              <div class="pulse-dot"></div>
+              <span id="scanner-status-text">Point camera at product barcode</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="scanner-tool-btn" id="scanner-torch-btn" title="Toggle Flashlight">💡</button>
+              <button type="button" class="scanner-tool-btn" id="scanner-flip-btn" title="Flip Camera">🔄</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Extra Controls & Image Upload -->
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <label class="btn-secondary" style="flex:1; padding:8px 12px; font-size:0.8rem; cursor:pointer; text-align:center;">
+          📁 Scan from Photo / Image
+          <input type="file" id="barcode-file-input" accept="image/*" style="display:none;" />
+        </label>
+      </div>
+
+      <!-- Manual Barcode Search Fallback -->
+      <form id="manual-barcode-form" class="manual-barcode-form">
+        <input type="text" id="manual-barcode-input" class="input-text" placeholder="Type barcode (e.g. 8901030383794)..." />
+        <button type="submit" class="btn-secondary" style="white-space:nowrap;">Lookup Code</button>
+      </form>
+
+      <!-- Detected Product Bottom Sheet / Card -->
+      <div id="detection-card" class="detection-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span class="product-category-tag" id="det-cat">Category</span>
+          <button type="button" id="det-close-btn" class="close-btn" style="width:24px; height:24px; font-size:0.75rem;">✕</button>
+        </div>
+
+        <div class="product-row">
+          <img id="det-img" src="" alt="Product" class="product-thumb" />
+          <div class="product-info">
+            <h3 id="det-title" class="product-title">Product Name</h3>
+            <div id="det-unit" class="product-unit">1 Unit</div>
+            <div class="product-price-line">
+              <span id="det-price" class="price-current">₹0.00</span>
+              <span id="det-mrp" class="price-mrp">₹0.00</span>
+              <span id="det-discount" class="discount-badge">10% OFF</span>
+            </div>
+            <div id="det-stock" class="stock-indicator in-stock">✓ In Stock</div>
+          </div>
+        </div>
+
+        <div class="qty-action-row">
+          <div class="qty-stepper">
+            <button type="button" class="qty-btn" id="det-qty-minus">-</button>
+            <span class="qty-val" id="det-qty-val">1</span>
+            <button type="button" class="qty-btn" id="det-qty-plus">+</button>
+          </div>
+          <button type="button" class="btn-primary" id="det-add-btn" style="width:auto; padding:10px 20px;">
+            <span>+ Add to Cart</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive Cart & Billing Breakdown Drawer -->
+      <div class="cart-sheet">
+        <div class="cart-header">
+          <div class="cart-title">
+            <span>🛒 My Shopping Cart</span>
+            <span class="stock-badge good" id="cart-count-badge">0 items</span>
+          </div>
+        </div>
+
+        <div id="cart-empty-state" style="text-align:center; padding:24px; color:var(--text-dim); font-size:0.88rem;">
+          <div style="font-size:2.2rem; margin-bottom:6px;">📦</div>
+          Your cart is empty. Scan product barcodes from the store shelves to add items.
+        </div>
+
+        <!-- Itemized Cart Items List -->
+        <div id="cart-items-list" class="cart-items-list"></div>
+
+        <!-- Coupon Code Section -->
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <input type="text" id="coupon-input" class="input-text" placeholder="Promo Code (e.g. SMART10, SAVE50)" style="padding:8px 12px; font-size:0.85rem;" />
+          <button type="button" class="btn-secondary" id="apply-coupon-btn" style="padding:8px 14px; font-size:0.85rem;">Apply</button>
+        </div>
+        <div id="coupon-msg" style="font-size:0.75rem; margin-top:4px;"></div>
+
+        <!-- Tax & Itemized Bill Breakdown -->
+        <div class="bill-breakdown">
+          <div class="bill-line">
+            <span>Items Subtotal:</span>
+            <span id="bill-subtotal">₹0.00</span>
+          </div>
+          <div class="bill-line">
+            <span>GST / VAT (Itemized):</span>
+            <span id="bill-tax">₹0.00</span>
+          </div>
+          <div class="bill-line savings">
+            <span>Total Savings / Discount:</span>
+            <span id="bill-savings">₹0.00</span>
+          </div>
+          <div class="bill-line grand-total">
+            <span>Grand Total:</span>
+            <span class="grand-total-amount" id="bill-grand-total">₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Sticky Floating Mobile Checkout Bar -->
+    <div id="bottom-checkout-bar" class="bottom-checkout-bar" style="display:none;">
+      <div class="checkout-summary">
+        <span class="checkout-total-label" id="bottom-item-count">0 items</span>
+        <span class="checkout-total-val" id="bottom-grand-total">₹0.00</span>
+      </div>
+      <button type="button" class="btn-primary" id="open-checkout-modal-btn" style="width:auto; padding:12px 24px;">
+        <span>Pay & Exit</span> <span>→</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL 1: CHECKOUT & PAYMENT SELECTION
+       ========================================================================= -->
+  <div id="payment-modal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Instant Digital Checkout</h3>
+        <button type="button" class="close-btn" onclick="window.SmartShopper.closeModal('payment-modal')">✕</button>
+      </div>
+
+      <!-- Payment Tabs -->
+      <div class="payment-tabs">
+        <div class="pay-tab active" data-method="upi">📱 UPI / QR</div>
+        <div class="pay-tab" data-method="card">💳 Cards</div>
+        <div class="pay-tab" data-method="counter">⚡ Fast Counter</div>
+      </div>
+
+      <!-- UPI Payment View -->
+      <div id="pay-view-upi" class="pay-method-view">
+        <div class="upi-qr-box">
+          <div style="font-size:0.82rem; font-weight:700; color:#0f172a; margin-bottom:8px;">Scan with GPay / PhonePe / Paytm</div>
+          <svg class="upi-qr-svg" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#fff" />
+            <rect x="10" y="10" width="25" height="25" fill="#0f172a" />
+            <rect x="15" y="15" width="15" height="15" fill="#fff" />
+            <rect x="18" y="18" width="9" height="9" fill="#0f172a" />
+            <rect x="65" y="10" width="25" height="25" fill="#0f172a" />
+            <rect x="70" y="15" width="15" height="15" fill="#fff" />
+            <rect x="73" y="18" width="9" height="9" fill="#0f172a" />
+            <rect x="10" y="65" width="25" height="25" fill="#0f172a" />
+            <rect x="15" y="70" width="15" height="15" fill="#fff" />
+            <rect x="18" y="73" width="9" height="9" fill="#0f172a" />
+            <rect x="45" y="15" width="8" height="8" fill="#0f172a" />
+            <rect x="45" y="30" width="8" height="8" fill="#0f172a" />
+            <rect x="45" y="45" width="12" height="12" fill="#0f172a" />
+            <rect x="65" y="45" width="12" height="12" fill="#0f172a" />
+            <rect x="45" y="65" width="15" height="8" fill="#0f172a" />
+            <rect x="70" y="70" width="15" height="15" fill="#0f172a" />
+          </svg>
+          <span style="font-size:0.75rem; color:#64748b; margin-top:6px; display:block;">UPI ID: smartscan.store104@icici</span>
+        </div>
+
+        <button type="button" class="btn-primary" id="btn-confirm-upi">
+          <span>✓ Simulate Instant UPI Payment</span>
+        </button>
+      </div>
+
+      <!-- Card Payment View -->
+      <div id="pay-view-card" class="pay-method-view" style="display:none;">
+        <div class="input-field-group">
+          <label>Card Number</label>
+          <input type="text" class="input-text" placeholder="•••• •••• •••• 4242" value="4532 •••• •••• 8899" />
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="input-field-group" style="flex:1;">
+            <label>Expiry</label>
+            <input type="text" class="input-text" placeholder="MM/YY" value="08/29" />
+          </div>
+          <div class="input-field-group" style="flex:1;">
+            <label>CVV</label>
+            <input type="password" class="input-text" placeholder="•••" value="888" />
+          </div>
+        </div>
+        <button type="button" class="btn-primary" id="btn-confirm-card" style="margin-top:8px;">
+          <span>Pay via Debit/Credit Card</span>
+        </button>
+      </div>
+
+      <!-- Fast Counter Cash View -->
+      <div id="pay-view-counter" class="pay-method-view" style="display:none;">
+        <div style="text-align:center; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; margin-bottom:16px;">
+          <div style="font-size:2rem; margin-bottom:4px;">⚡</div>
+          <strong>Express Cash Counter Slip</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
+            Show your barcode at Counter #01 for 10-second cash payment.
+          </p>
+        </div>
+        <button type="button" class="btn-primary" id="btn-confirm-counter">
+          <span>Generate Fast Counter Barcode</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: TAMPER-PROOF DIGITAL INVOICE & EXIT GATE PASS
+       ========================================================================= -->
+  <div id="exit-pass-modal" class="modal-backdrop">
+    <div class="modal-content" style="max-width:420px;">
+      
+      <div class="exit-pass-card">
+        <div class="exit-pass-watermark">PAID & VERIFIED</div>
+
+        <div style="text-align:center;">
+          <div class="exit-status-pill">
+            <span>●</span> <span>PAID & AUTHENTICATED</span>
+          </div>
+
+          <h2 style="font-size:1.3rem; font-weight:800; color:#fff;">Security Gate Exit Pass</h2>
+          <div style="font-size:0.78rem; color:var(--text-muted);">Smart Supermarket • Order #<span id="pass-order-num">ORD-0000</span></div>
+
+          <!-- Cryptographic Exit QR Container -->
+          <div class="exit-qr-container" id="pass-qr-box">
+            <!-- Rendered SVG QR via JS -->
+          </div>
+
+          <div>
+            <span class="exit-timer-chip">Time: <span id="pass-date">12:00:00</span></span>
+          </div>
+        </div>
+
+        <div style="margin-top:16px; border-top:1px dashed var(--border-glass); padding-top:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:6px;">
+            <span style="color:var(--text-muted);">Total Amount Paid:</span>
+            <strong id="pass-total" style="color:var(--primary); font-size:1.05rem;">₹0.00</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:10px;">
+            <span style="color:var(--text-muted);">Billed Items:</span>
+            <span id="pass-items-count" style="color:#fff; font-weight:600;">0 items</span>
+          </div>
+
+          <div id="pass-items-summary" style="max-height:100px; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px;">
+            <!-- Summary list -->
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <button type="button" class="btn-primary" style="width:100%;" onclick="window.SmartShopper.closeModal('exit-pass-modal')">
+            <span>Done / Return to Cart</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="scanner.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="description" content="SmartScan Store Operations & Exit Gate Security Management Portal" />
+  <title>SmartScan — Store Manager & Exit Gate Portal</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Html5Qrcode Barcode & QR Engine CDN -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. TOP HEADER NAVIGATION
+       ========================================================================= -->
+  <header class="top-header">
+    <div class="brand-badge">
+      <div class="brand-icon">👔</div>
+      <span>SmartScan<span style="color:var(--secondary);">.Ops</span></span>
+    </div>
+
+    <div class="user-badge" id="header-user-badge" style="display:none;">
+      <span class="role-pill" id="user-role-label">👔 Store Manager</span>
+      <button type="button" class="btn-secondary" id="btn-mgr-logout" style="padding:6px 12px; font-size:0.75rem;">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Toast Notification Hub -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main Container -->
+  <main class="portal-container">
+
+    <!-- =======================================================================
+         VIEW 1: SECURE MANAGER & GUARD LOGIN (.env Authenticated)
+         ======================================================================= -->
+    <section id="portal-login-sec">
+      <div class="login-wrap">
+        <div class="login-icon">🔐</div>
+        <h1 class="login-title">Operations Portal</h1>
+        <p class="login-subtitle">Store Manager Inventory Hub & Security Gate Operations</p>
+
+        <!-- Login Method Tabs -->
+        <div class="login-tabs">
+          <button type="button" class="login-tab-btn active" id="login-tab-creds">Manager Login</button>
+          <button type="button" class="login-tab-btn" id="login-tab-pin">Manager PIN</button>
+          <button type="button" class="login-tab-btn" id="login-tab-guard">Security Guard</button>
+        </div>
+
+        <!-- Tab 1: Manager Username & Password Form -->
+        <form id="form-mgr-creds">
+          <div class="input-field-group">
+            <label for="mgr-username">Manager Username</label>
+            <input type="text" id="mgr-username" class="input-text" placeholder="admin" value="admin" required />
+          </div>
+
+          <div class="input-field-group">
+            <label for="mgr-password">Password</label>
+            <input type="password" id="mgr-password" class="input-text" placeholder="••••••••" value="SmartStore@2026" required />
+          </div>
+
+          <div style="text-align:right; margin-bottom:12px;">
+            <span style="font-size:0.72rem; color:var(--text-muted);">Loaded from <code>.env</code> file (Demo: <code>admin</code> / <code>SmartStore@2026</code>)</span>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%;">
+            <span>Authenticate Manager</span> <span>→</span>
+          </button>
+        </form>
+
+        <!-- Tab 2: Manager Quick PIN Form -->
+        <form id="form-mgr-pin" style="display:none;">
+          <div class="input-field-group">
+            <label for="mgr-pin">Manager 4-Digit PIN</label>
+            <input type="password" id="mgr-pin" class="input-text" placeholder="1234" value="1234" maxlength="6" required />
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">
+            <span>Unlock Manager Dashboard (PIN: 1234)</span> <span>→</span>
+          </button>
+        </form>
+
+        <!-- Tab 3: Security Guard PIN Form -->
+        <form id="form-guard-pin" style="display:none;">
+          <div class="input-field-group">
+            <label for="guard-pin-input">Gate Security PIN Code</label>
+            <input type="password" id="guard-pin-input" class="input-text" placeholder="5678" value="5678" maxlength="6" required />
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">
+            <span>Open Exit Gate Scanner (PIN: 5678)</span> <span>→</span>
+          </button>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         VIEW 2: STORE OPERATIONS DASHBOARD & CONTROLS
+         ======================================================================= -->
+    <section id="portal-dashboard-sec" style="display:none;">
+
+      <!-- Admin Top Header & Actions -->
+      <div class="admin-header">
+        <div class="admin-title-wrap">
+          <h1>Store Operations & Catalog Hub</h1>
+          <p>Real-time inventory levels, self-checkout transactions, and tamper-proof exit gate verification.</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <a href="shelf_tags.html" target="_blank" class="btn-secondary">🏷️ Printable Shelf Tags ↗</a>
+          <button type="button" class="btn-secondary" id="btn-export-catalog">📥 Export CSV</button>
+          <button type="button" class="btn-primary" onclick="window.SmartManager.openModal('add-product-modal')">
+            <span>+ Add New SKU</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live KPI Metrics Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Today's Self-Checkout Rev</span>
+            <div class="metric-icon rev">₹</div>
+          </div>
+          <div class="metric-value" id="kpi-revenue">₹0.00</div>
+          <div class="metric-trend">↑ Real-time synced</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Total Digital Orders</span>
+            <div class="metric-icon orders">⚡</div>
+          </div>
+          <div class="metric-value" id="kpi-orders">0</div>
+          <div class="metric-trend">Instant self-checkout</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Average Basket Size</span>
+            <div class="metric-icon basket">🛒</div>
+          </div>
+          <div class="metric-value" id="kpi-basket">₹0.00</div>
+          <div class="metric-trend">Promos applied</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Low Stock Alerts</span>
+            <div class="metric-icon alert">⚠️</div>
+          </div>
+          <div class="metric-value" id="kpi-low-stock" style="color:var(--warning);">0</div>
+          <div class="metric-trend" style="color:var(--warning);">Restock needed</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="inventory">📦 Catalog & Stock Management</button>
+        <button class="nav-tab-btn" data-tab="orders">💳 Live Transactions</button>
+        <button class="nav-tab-btn" data-tab="analytics">📊 Peak Hours & Analytics</button>
+        <button class="nav-tab-btn" data-tab="guard">🛡️ Security Exit Gate Scanner</button>
+      </div>
+
+      <!-- PANEL 1: Catalog & Stock Management -->
+      <div id="panel-inventory">
+        <div class="filter-bar">
+          <input type="text" id="catalog-search-input" class="input-text search-input" placeholder="Search by name, barcode (EAN-13), brand, or shelf location..." />
+          <select id="catalog-category-filter" class="filter-select">
+            <option value="All">All Categories</option>
+            <option value="Dairy & Eggs">Dairy & Eggs</option>
+            <option value="Bakery">Bakery</option>
+            <option value="Snacks & Dry Fruits">Snacks & Dry Fruits</option>
+            <option value="Beverages">Beverages</option>
+            <option value="Gourmet & Cooking">Gourmet & Cooking</option>
+            <option value="Personal Care">Personal Care</option>
+            <option value="Fresh Produce">Fresh Produce</option>
+            <option value="Household & Cleaning">Household & Cleaning</option>
+          </select>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--text-muted); cursor:pointer;">
+            <input type="checkbox" id="catalog-low-stock-check" />
+            <span>Low stock only</span>
+          </label>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product & SKU</th>
+                <th>Barcode</th>
+                <th>Category</th>
+                <th>Price (MRP)</th>
+                <th>Stock Level</th>
+                <th>Aisle Location</th>
+                <th style="text-align:right;">Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL 2: Live Transactions -->
+      <div id="panel-orders" style="display:none;">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Items Count</th>
+                <th>Total Billed</th>
+                <th>Gate Exit Status</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL 3: Peak Hours & Analytics -->
+      <div id="panel-analytics" style="display:none;">
+        <div class="analytics-grid">
+          <div class="chart-card">
+            <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:4px;">Peak Shopping Hours</h3>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Real-time self-checkout traffic distribution</span>
+            <div class="bar-chart" id="peak-hours-chart">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:4px;">Top Self-Scanned Products</h3>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Bestsellers by units sold</span>
+            <div class="top-products-list" id="top-products-list" style="margin-top:14px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 4: Security Guard Exit Gate Scanner -->
+      <div id="panel-guard" style="display:none;">
+        <div class="guard-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+              <h2 style="font-size:1.3rem; font-weight:800;">Exit Gate Security Pass Scanner</h2>
+              <p style="font-size:0.84rem; color:var(--text-muted);">Scan the shopper's digital invoice QR code to verify payment and physical bag items.</p>
+            </div>
+            <div class="stock-badge good">🛡️ Gate #1 Active</div>
+          </div>
+
+          <!-- Camera Viewport -->
+          <div class="scanner-view-container">
+            <div id="guard-reader-container"></div>
+          </div>
+
+          <div style="margin-bottom:14px; text-align:center; font-size:0.82rem; color:var(--text-muted);" id="guard-status-text">
+            Ready to scan exit pass
+          </div>
+
+          <!-- Manual Verification Input Fallback -->
+          <form id="guard-token-form" style="display:flex; gap:8px; margin-bottom:16px;">
+            <input type="text" id="guard-manual-token-input" class="input-text" placeholder="Or paste Exit Token (e.g. SMARTSCAN-EXIT-ORD-...)" />
+            <button type="submit" class="btn-secondary" style="white-space:nowrap;">Verify Token</button>
+          </form>
+
+          <!-- Result Banners -->
+          <div id="guard-banner-verified" class="guard-result-banner verified">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:1.8rem;">✅</span>
+              <div>
+                <strong style="font-size:1.1rem; display:block;">PASS VERIFIED & CLEARED</strong>
+                <span id="guard-customer-info" style="font-size:0.82rem;">Payment confirmed. Zero discrepancies.</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="guard-banner-already" class="guard-result-banner already-used">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:1.8rem;">⚠️</span>
+              <div>
+                <strong style="font-size:1.1rem; display:block;">SECURITY ALERT: PASS ALREADY USED</strong>
+                <span style="font-size:0.82rem;">This QR pass has already cleared the gate earlier. Duplicate exit attempt!</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="guard-banner-invalid" class="guard-result-banner invalid">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:1.8rem;">🚫</span>
+              <div>
+                <strong style="font-size:1.1rem; display:block;">INVALID / UNPAID QR PASS</strong>
+                <span style="font-size:0.82rem;">Cryptographic signature verification failed. Not found in store records.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bag Inspection Checklist -->
+          <div id="guard-checklist-box" class="bag-audit-checklist" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <strong style="font-size:0.88rem; color:var(--text-main);">Physical Bag Audit Checklist:</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Confirm items match cart</span>
+            </div>
+            <div id="guard-checklist-items">
+              <!-- Rendered via JS -->
+            </div>
+            <button type="button" class="btn-primary" style="width:100%; margin-top:14px; padding:10px;" onclick="window.SmartManager.showToast('Bag audit approved. Turnstile gate opened.', 'success'); document.getElementById('guard-checklist-box').style.display='none';">
+              ✓ Approve & Open Turnstile
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL: ADD NEW SKU (Manager Catalog CRUD)
+       ========================================================================= -->
+  <div id="add-product-modal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Product to Catalog</h3>
+        <button type="button" class="close-btn" onclick="window.SmartManager.closeModal('add-product-modal')">✕</button>
+      </div>
+
+      <form id="add-product-form">
+        <div class="input-field-group">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="new-sku-barcode">Barcode (EAN-13 / UPC)</label>
+            <button type="button" id="btn-gen-barcode" style="background:none; border:none; color:var(--secondary); font-size:0.75rem; cursor:pointer;">
+              ⚡ Auto Generate
+            </button>
+          </div>
+          <input type="text" id="new-sku-barcode" class="input-text" placeholder="e.g. 8901234567890" required />
+        </div>
+
+        <div class="input-field-group">
+          <label for="new-sku-name">Product Name</label>
+          <input type="text" id="new-sku-name" class="input-text" placeholder="e.g. Pure Honey 500g" required />
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-category">Category</label>
+            <select id="new-sku-category" class="filter-select" style="width:100%;">
+              <option value="Dairy & Eggs">Dairy & Eggs</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Snacks & Dry Fruits">Snacks & Dry Fruits</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Gourmet & Cooking">Gourmet & Cooking</option>
+              <option value="Personal Care">Personal Care</option>
+              <option value="Fresh Produce">Fresh Produce</option>
+              <option value="Household & Cleaning">Household & Cleaning</option>
+            </select>
+          </div>
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-unit">Unit / Size</label>
+            <input type="text" id="new-sku-unit" class="input-text" placeholder="e.g. 500g, 1L" value="500g" required />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-cost">Cost Price (₹)</label>
+            <input type="number" step="0.01" id="new-sku-cost" class="input-text" placeholder="70.00" value="70.00" />
+          </div>
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-selling">Selling Price (₹)</label>
+            <input type="number" step="0.01" id="new-sku-selling" class="input-text" placeholder="99.00" value="99.00" required />
+          </div>
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-mrp">MRP (₹)</label>
+            <input type="number" step="0.01" id="new-sku-mrp" class="input-text" placeholder="110.00" value="110.00" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-stock">Initial Stock</label>
+            <input type="number" id="new-sku-stock" class="input-text" placeholder="50" value="50" />
+          </div>
+          <div class="input-field-group" style="flex:1;">
+            <label for="new-sku-threshold">Low Threshold</label>
+            <input type="number" id="new-sku-threshold" class="input-text" placeholder="10" value="10" />
+          </div>
+        </div>
+
+        <div class="input-field-group">
+          <label for="new-sku-shelf">Aisle / Shelf Location</label>
+          <input type="text" id="new-sku-shelf" class="input-text" placeholder="e.g. Aisle 3 - Shelf B" value="Aisle 3 - Shelf B" />
+        </div>
+
+        <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">
+          <span>Add SKU to Store Catalog</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="scanner.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
